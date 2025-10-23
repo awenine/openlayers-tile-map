@@ -1,6 +1,7 @@
 @import "node_modules/ol/ol.css";
 
-html, body {
+html,
+body {
   margin: 0;
   height: 100%;
 }
@@ -9,4 +10,16 @@ html, body {
   top: 0;
   bottom: 0;
   width: 100%;
+}
+
+.ol-popup {
+  position: absolute;
+  background-color: rgb(237, 130, 130);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #cccccc;
+  bottom: 12px;
+  left: -50px;
+  min-width: 280px;
 }
