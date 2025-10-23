@@ -14,6 +14,7 @@ const baseTileLayerImage = new TileLayer({
   })
 })
 // test comment for commit
+// second comment test
 
 const map = new Map({
   target: 'map',
