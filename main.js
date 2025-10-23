@@ -13,6 +13,7 @@ const baseTileLayerImage = new TileLayer({
     url: imageTileFunction,
   })
 })
+// test comment for commit
 
 const map = new Map({
   target: 'map',
