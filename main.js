@@ -37,18 +37,19 @@ popupContainer.onclick = () => {
 };
 
 // Markers
-const hanumanIcon = new Icon({
-  src: `./markers/hanuman_sticker.png`,
-  scale: 0.1,
-});
-
-// hanumanIcon.on("singleclick", (event) => {
-//   console.log("icon event: ",event);
-// })
 
 const hanumanMarkerStyle = new Style({
-  image: hanumanIcon,
-  name: "ROOB",
+  image: new Icon({
+    src: `./markers/hanuman_sticker.png`,
+    scale: 0.1,
+  }),
+});
+
+const hanumanMarkerBlurStyle = new Style({
+  image: new Icon({
+    src: `./markers/hanuman_sticker_blur.png`,
+    scale: 0.1,
+  }),
 });
 
 const markerFeature = new Feature({
@@ -64,6 +65,7 @@ const markerFeature = new Feature({
       nestedKey: "value",
     },
   },
+  highlightStyle: hanumanMarkerBlurStyle,
 });
 
 //* Styles must be set after construction. Can be single, array, or function returning a style
@@ -102,10 +104,25 @@ const map = new Map({
   }),
 });
 
+// Style function (for customising a style change on select)
+const customSelectStyle = (feature) => {
+  // Get the feature's original style(s)
+  const originalStyle = feature.getStyle();
+
+  // 'originalStyle' might be a single style or an array, so let's normalize it
+  const styles = Array.isArray(originalStyle) ? originalStyle : [originalStyle];
+
+  // Return a new array containing the original style(s) AND our highlight
+  return [feature.get("highlightStyle")];
+};
+
 // Create a Select interaction
 const selectInteraction = new Select({
   condition: singleClick, // or pointerMove for hover selection
   layers: [markerLayer], // Specify the layer containing your icons
+  // style: null, // * this stops the default behaviour of changing the icon into a blue dot
+  // * NOTE: the above can also be a function that takes the original Feature and returns an array of styles
+  style: customSelectStyle,
 });
 
 map.addInteraction(selectInteraction);
@@ -123,7 +140,7 @@ selectInteraction.on("select", function (event) {
     map.getView().animate({
       center: event.mapBrowserEvent.coordinate,
       zoom: 5,
-      duration: 1000, // Duration of the animation in milliseconds
+      duration: 500, // Duration of the animation in milliseconds
     });
 
     content.innerHTML = "<p>You clicked here</p>";
