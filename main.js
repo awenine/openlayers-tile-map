@@ -1,18 +1,15 @@
 import "./style.css";
-import { Feature, Map, Overlay, View } from "ol";
+import { Map, Overlay, View } from "ol";
 import { Point } from "ol/geom";
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import { fromLonLat } from "ol/proj";
 import { ImageTile } from "ol/source";
 import VectorSource from "ol/source/Vector";
-import Icon from "ol/style/Icon";
-import Style from "ol/style/Style";
 import Select from "ol/interaction/Select.js";
 import { singleClick } from "ol/events/condition";
-
-// Points
-const leftEarTip = new Point([-1181490.0339983515, 14374462.689464783]);
+import { markerData } from "./data/markerData";
+import { createMarker } from "./components/createMarker";
 
 // Overlay
 // --- 1. Get HTML Elements for the Popup ---
@@ -36,43 +33,8 @@ popupContainer.onclick = () => {
   return false;
 };
 
-// Markers
-
-const hanumanMarkerStyle = new Style({
-  image: new Icon({
-    src: `./markers/hanuman_sticker.png`,
-    scale: 0.1,
-  }),
-});
-
-const hanumanMarkerBlurStyle = new Style({
-  image: new Icon({
-    src: `./markers/hanuman_sticker_blur.png`,
-    scale: 0.1,
-  }),
-});
-
-const markerFeature = new Feature({
-  // * using fromLongLat() will apply projection (default: Mercator)
-  // geometry: new Point(fromLonLat([-100, 60])),
-  geometry: leftEarTip,
-  // * can add artbitrary key/values here and retrive upon click
-  name: "Monkey God",
-  details: {
-    one: 1,
-    arr: ["asd", "gdfd,"],
-    ob: {
-      nestedKey: "value",
-    },
-  },
-  highlightStyle: hanumanMarkerBlurStyle,
-});
-
-//* Styles must be set after construction. Can be single, array, or function returning a style
-markerFeature.setStyle(hanumanMarkerStyle);
-
 const vectorSource = new VectorSource({
-  features: [markerFeature],
+  features: markerData.map((m) => createMarker(m)),
 });
 
 const markerLayer = new VectorLayer({
@@ -106,14 +68,14 @@ const map = new Map({
 
 // Style function (for customising a style change on select)
 const customSelectStyle = (feature) => {
-  // Get the feature's original style(s)
-  const originalStyle = feature.getStyle();
+  // // Get the feature's original style(s)
+  // const originalStyle = feature.getStyle();
 
-  // 'originalStyle' might be a single style or an array, so let's normalize it
-  const styles = Array.isArray(originalStyle) ? originalStyle : [originalStyle];
+  // // 'originalStyle' might be a single style or an array, so let's normalize it
+  // const styles = Array.isArray(originalStyle) ? originalStyle : [originalStyle];
 
   // Return a new array containing the original style(s) AND our highlight
-  return [feature.get("highlightStyle")];
+  return [feature.get("selectedStyle")];
 };
 
 // Create a Select interaction
@@ -133,6 +95,7 @@ selectInteraction.on("select", function (event) {
   const selectedFeatures = event.selected;
   if (selectedFeatures.length > 0) {
     const clickedFeature = selectedFeatures[0];
+    const { name, colour } = clickedFeature.get("details");
     // * the values are where we can retrieve key/values added to the feature using .get(key)
     console.log("Icon clicked:", clickedFeature.get("details"));
 
@@ -143,7 +106,8 @@ selectInteraction.on("select", function (event) {
       duration: 500, // Duration of the animation in milliseconds
     });
 
-    content.innerHTML = "<p>You clicked here</p>";
+    content.innerHTML = `<p>${name}</p>`;
+    popupContainer.style.backgroundColor = colour;
     overlay.setPosition(event.mapBrowserEvent.coordinate);
   }
 });
