@@ -1,31 +1,123 @@
-import './style.css';
-import {Map, View} from 'ol';
-import TileLayer from 'ol/layer/Tile';
-import { fromLonLat } from 'ol/proj';
-import { ImageTile } from 'ol/source';
+import "./style.css";
+import { Map, Overlay, View } from "ol";
+import { Point } from "ol/geom";
+import TileLayer from "ol/layer/Tile";
+import VectorLayer from "ol/layer/Vector";
+import { fromLonLat } from "ol/proj";
+import { ImageTile } from "ol/source";
+import VectorSource from "ol/source/Vector";
+import Select from "ol/interaction/Select.js";
+import { singleClick } from "ol/events/condition";
+import { markerData } from "./data/markerData";
+import { createMarker } from "./components/createMarker";
 
+// Overlay
+// --- 1. Get HTML Elements for the Popup ---
+const popupContainer = document.getElementById("popup");
+const content = document.getElementById("popup-content");
+
+// --- 2. Create the OpenLayers Overlay ---
+const overlay = new Overlay({
+  element: popupContainer,
+  autoPan: {
+    animation: {
+      duration: 250,
+    },
+  },
+});
+
+// * added to close overlay on clicking it
+popupContainer.onclick = () => {
+  overlay.setPosition(undefined);
+  popupContainer.blur();
+  return false;
+};
+
+const vectorSource = new VectorSource({
+  features: markerData.map((m) => createMarker(m)),
+});
+
+const markerLayer = new VectorLayer({
+  source: vectorSource,
+});
+
+// Tiles
 function imageTileFunction(z, x, y) {
-  return `./tiles/${z}_${x}_${y}.jpg`
+  return `./tiles/${z}_${x}_${y}.jpg`;
 }
 
 const baseTileLayerImage = new TileLayer({
   source: new ImageTile({
     url: imageTileFunction,
-  })
-})
-// test comment for commit
-// second comment test
+  }),
+});
 
+// Map
 const map = new Map({
-  target: 'map',
-  layers: [
-    baseTileLayerImage
-  ],
+  target: "map",
+  layers: [baseTileLayerImage, markerLayer],
+  overlays: [overlay],
   view: new View({
     // center: [0, 0],
     center: fromLonLat([-100, 60]),
     zoom: 2,
     minZoom: 3,
     maxZoom: 5,
-  })
+  }),
+});
+
+// Style function (for customising a style change on select)
+const customSelectStyle = (feature) => {
+  // // Get the feature's original style(s)
+  // const originalStyle = feature.getStyle();
+
+  // // 'originalStyle' might be a single style or an array, so let's normalize it
+  // const styles = Array.isArray(originalStyle) ? originalStyle : [originalStyle];
+
+  // Return a new array containing the original style(s) AND our highlight
+  return [feature.get("selectedStyle")];
+};
+
+// Create a Select interaction
+const selectInteraction = new Select({
+  condition: singleClick, // or pointerMove for hover selection
+  layers: [markerLayer], // Specify the layer containing your icons
+  // style: null, // * this stops the default behaviour of changing the icon into a blue dot
+  // * NOTE: the above can also be a function that takes the original Feature and returns an array of styles
+  style: customSelectStyle,
+});
+
+map.addInteraction(selectInteraction);
+
+// Listen for the 'select' event
+selectInteraction.on("select", function (event) {
+  console.log("event: ", event);
+  const selectedFeatures = event.selected;
+  if (selectedFeatures.length > 0) {
+    const clickedFeature = selectedFeatures[0];
+    const { name, colour } = clickedFeature.get("details");
+    // * the values are where we can retrieve key/values added to the feature using .get(key)
+    console.log("Icon clicked:", clickedFeature.get("details"));
+
+    // * can also animat to a map location on click and zoom in
+    map.getView().animate({
+      center: event.mapBrowserEvent.coordinate,
+      zoom: 5,
+      duration: 500, // Duration of the animation in milliseconds
+    });
+
+    content.innerHTML = `<p>${name}</p>`;
+    popupContainer.style.backgroundColor = colour;
+    overlay.setPosition(event.mapBrowserEvent.coordinate);
+  }
+});
+
+// * Handles clicking on the map
+
+map.on("singleclick", (clickEvent) => {
+  const coordinate = clickEvent.coordinate;
+  // console.log("clickEvent: ",clickEvent);
+  console.log("coordinate: ", coordinate);
+  // content.innerHTML = '<p>You clicked here:</p><code>' + hdms + '</code>';
+  // overlay.setPosition(coordinate);
 });
