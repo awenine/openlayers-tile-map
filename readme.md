@@ -1,6 +1,18 @@
 # OpenLayers Example with Tiling Script
 
-This repo contains an example of an Openlayer map page, as well as an automated script pipeline for cutting images into tiles to me used for a map
+This repo contains an example of an Openlayer map page, as well as an automated script pipeline for cutting images into tiles to be used for the map.
+
+## Requirements
+
+- The map is set up to use tiles with the following naming convention:
+
+```
+z_x_y.jpg/png
+```
+
+where `z` is the zoom level. These tile can be added manually if created with an external method - for example, using Photoshop and the [PS_Bramus.GoogleMapsTileCutter script](https://github.com/bramus/photoshop-google-maps-tile-cutter) (**NOTE** - check the naming conventions of the tiles created by this script).
+
+To use the script pipeline included, **Image Magick** will need to be installed on a Linux system, or a WSL environment on a Windows system (which is how this repo was developed). Instructions for installing on Linux can be found [here](https://imagemagick.org/script/download.php).
 
 ## Setup
 
