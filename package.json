@@ -8,7 +8,7 @@
     "update-tiles": "rm -rf ./public/tiles/* && ls -1 ./map_image | head -n 1 | xargs ./tiling_script.sh"
   },
   "devDependencies": {
-    "vite": "^7.1.11"
+    "vite": "^7.1.12"
   },
   "dependencies": {
     "ol": "latest"
